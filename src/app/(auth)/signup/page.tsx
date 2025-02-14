@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { View, Text, StyleSheet, TextInput, Pressable, SafeAreaView, ScrollView } from "react-native";
+import { View, Text, StyleSheet, TextInput, Pressable, SafeAreaView, ScrollView, Alert } from "react-native";
 import Colors from "../../../../constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import Api from "../../../../constants/Api";
 
 export default function Signup() {
     const [name, setName] = useState("");
@@ -10,16 +11,43 @@ export default function Signup() {
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
 
-    function handleSigUp() {
-        console.log({
+    async function handleSigUp() {
+        if (name == '') {
+            Alert.alert("Preencha o nome!");
+            return;
+        }
+
+        if (email == '') {
+            Alert.alert("Preencha o e-mail!");
+            return;
+        }
+
+        if (password == '') {
+            Alert.alert("Preencha a senha!");
+            return;
+        }
+
+        setLoading(true);
+
+        const user = {
             name,
             email,
             password
+        };
+
+        await fetch(`${Api.url}/users`, {
+            method: "POST",
+            body: JSON.stringify(user)
         });
+
+        Alert.alert("Usuário cadastrado com sucesso!");
+        setLoading(false);
+
+        router.replace("/(auth)/signin/page");
     }
 
     return (
-        <SafeAreaView style={{ flex: 1 }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: Colors.zinc }}>
             <ScrollView style={{ flex: 1, backgroundColor: Colors.white }}>
                 <View style={styles.container}>
                     <View style={styles.header}>
@@ -55,6 +83,7 @@ export default function Signup() {
                                 placeholderTextColor={Colors.silver}
                                 value={email}
                                 onChangeText={setEmail}
+                                autoCapitalize="none"
                             />
                         </View>
                         <View>
@@ -69,7 +98,9 @@ export default function Signup() {
                             />
                         </View>
                         <Pressable style={styles.button} onPress={handleSigUp}>
-                            <Text style={styles.buttonText}>Cadastrar</Text>
+                            <Text style={styles.buttonText}>
+                                {loading ? "Carregando..." : "Cadastrar"}
+                            </Text>
                         </Pressable>
                     </View>
                 </View>
